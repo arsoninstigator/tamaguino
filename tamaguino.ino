@@ -434,46 +434,136 @@ void setup() {
 }
 
 
-if(!dead){
-    /* -------- MODIFY PET STATS -------- */
-    // TODO: different gradients regarding to age
-    if(sleeping){
-      hunger-=0.00005;
-      poopometer+=0.00005;
-      if(happiness-0.0001>0){
-        happiness-=0.0001;
-      }
-      health-=0.00005+countPoops()*0.0001;
-      if(discipline-0.0001>0){
-        discipline-=0.0001;
-      }
-    }else{
-      hunger-=0.00025;
-      poopometer+=0.00025;
-      if(happiness-0.0002>0){
-        happiness-=0.0002;
-      }
-      health-=0.0001+countPoops()*0.0001;
-      if(discipline-0.0002>0){
-        discipline-=0.0002;
-      }
-      //discipline-=0.02;
-    }
-    age+=0.0000025;
+void loop() {
 
-    //diarrhea :) for testing
-    //poopometer+=0.005;
+  button1State = digitalRead(button1Pin);
+  button2State = digitalRead(button2Pin);
+  button3State = digitalRead(button3Pin);
 
-    //health-=1;
-    //health-=countPoops()*0.0001;
-    //health-=countPoops()*0.05;
+      if(!dead){
+          /* -------- MODIFY PET STATS -------- */
+          // TODO: different gradients regarding to age
+          if(sleeping){
+            hunger-=0.00005;
+            poopometer+=0.00005;
+            if(happiness-0.0001>0){
+              happiness-=0.0001;
+            }
+            health-=0.00005+countPoops()*0.0001;
+            if(discipline-0.0001>0){
+              discipline-=0.0001;
+            }
+          }else{
+            hunger-=0.00025;
+            poopometer+=0.00025;
+            if(happiness-0.0002>0){
+              happiness-=0.0002;
+            }
+            health-=0.0001+countPoops()*0.0001;
+            if(discipline-0.0002>0){
+              discipline-=0.0002;
+            }
+            //discipline-=0.02;
+          }
+          age+=0.0000025;
+      
+          //diarrhea :) for testing
+          //poopometer+=0.005;
+      
+          //health-=1;
+          //health-=countPoops()*0.0001;
+          //health-=countPoops()*0.05;
+      
+          if(poopometer>=10){
+            poopometer=countPoops();
+            poops[round(poopometer)]=random(20,display.width()+32);
+            if(soundEnabled){
+              tone(sound,200,50);
+            }
+            poopometer=0;
+          }
 
-    if(poopometer>=10){
-      poopometer=countPoops();
-      poops[round(poopometer)]=random(20,display.width()+32);
-      if(soundEnabled){
-        tone(sound,200,50);
+      if((hunger>19.99975 && hunger<20.00025) || (happiness>19.9998 && happiness<20.0002) || (health>19.9999 && health<20.0001) && soundEnabled){
+            if(soundEnabled){
+              tone(sound,200,50);
+            }
+          }
+      
+      
+          if(hunger<=20 || countPoops()>0 || happiness<=20 || health<=20){
+            notification=true;
+          }
+          if(hunger>20 && countPoops()==0 && happiness>20 && health>20){
+            notification=false;
+            digitalWrite(13,LOW);
+          }
+      
+          if(hunger<=0 || health<=0 || happiness<=0){
+            dead=true;
+            if(soundEnabled){
+              tone(sound,500,500);
+              delay(550);
+              tone(sound,400,500);
+              delay(550);
+              tone(sound,300,600);
+            }
+          }
+
+
+    display.clearDisplay();
+    display.setCursor(0,0);
+
+ /* ------- BUTTON PRESS ACTIONS ------- */
+
+    /* ------- BUTTON 1 - MENU ------- */
+    if(button1State==ACTIVATED){
+
+      // JUMP IN GAME
+      if(game){
+
+        if(!jumping && !paused){
+          if(soundEnabled){
+            tone(sound,200,50);
+          }
+          jumping=true;
+        }
+
+      }else{
+        // MENU
+
+        if(soundEnabled){
+          tone(sound,300,80);
+        }
+
+        if(!menuOpened){
+          menuOpened=true;
+        }else{
+          if(menuDepth){
+
+            if((const char*)pgm_read_word(&(mainMenu[menu][subMenu+1]))==NULL){
+              subMenu=1;
+            }else{
+              ++subMenu;
+            }
+            setting=100*(menu+1)+subMenu;
+          }else{
+            if(menu==MENUSIZE-1){
+              menu=0;
+            }else{
+              ++menu;
+            }
+
+            if((const char*)pgm_read_word(&(mainMenu[menu][1]))!=NULL){
+              subMenu=1;
+
+              justOpened=true;
+            }
+            setting=100*(menu+1)+subMenu;
+          }
+        }
+
+        delay(60);
+
       }
-      poopometer=0;
-    }
+
 
