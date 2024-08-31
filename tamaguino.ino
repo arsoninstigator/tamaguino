@@ -329,3 +329,151 @@ bool menuDepth=false;
 bool justOpened=false;
 #define MENUSIZE 8
 #define STRING_SIZE 11
+
+const char mainMenu[MENUSIZE][8][STRING_SIZE] PROGMEM = {
+  {"food","apple","steak","water",NULL},
+  {"game",NULL},
+  {"sleep",NULL},
+  {"clean",NULL},
+  {"doctor",NULL},
+  {"discipline",NULL},
+  {"stats","hunger","happiness","health","discipline","weight","age",NULL},
+  {"settings","sound",
+    //"something",
+    NULL
+  },
+};
+
+/* ------- PET STATS ------- */
+
+float hunger=100;
+float happiness=100;
+float health=100;
+float discipline=100;
+float weight=1;
+float age=0;
+
+//settings
+bool soundEnabled=true;
+
+int action=0;
+int setting=0;
+
+bool notification = false;
+int notificationBlink=0;
+bool dead=false;
+
+bool sleeping=false;
+
+//game
+bool game=false;
+bool paused=false;
+bool gameOver=false;
+int score = 0;
+int hiScore = 0;
+int level=0;
+bool newHiScore = false;
+bool jumping=false;
+bool jumpUp=true;
+int jumpPos=0;
+bool obstacle1show = false;
+bool obstacle2show = false;
+int obstacle1XPos = 0;
+int obstacle2XPos = 0;
+
+
+float poopometer=0;
+int poops [3] = {
+  0,0,0,
+};
+
+#define ACTIVATED LOW
+
+void setup() {
+  pinMode(button1Pin, INPUT);
+  pinMode(button2Pin, INPUT);
+  pinMode(button3Pin, INPUT);
+
+  digitalWrite(button1Pin, HIGH);
+  digitalWrite(button2Pin, HIGH);
+  digitalWrite(button3Pin, HIGH);
+  // pinMode(button1Pin, INPUT_PULLUP)
+
+  pinMode(sound, OUTPUT);
+
+  pinMode(13,OUTPUT);
+
+  randomSeed(analogRead(0));
+
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3d);
+  display.clearDisplay();
+
+  // splash
+  display.setTextColor(WHITE);
+  display.print(F(" anoushka presents"));
+  display.drawBitmap(15, 24, splash1 , 48, 26, WHITE);
+  display.drawBitmap(48, 24, splash2 , 80, 40, WHITE);
+  display.display();
+
+  //splash tone
+
+  tone(sound,500,200);
+  delay(200);
+  tone(sound,1000,200);
+  delay(400);
+  tone(sound,700,200);
+  delay(200);
+  tone(sound,1100,200);
+
+  delay(2200);
+  // end splash
+
+
+  display.clearDisplay();
+
+}
+
+
+if(!dead){
+    /* -------- MODIFY PET STATS -------- */
+    // TODO: different gradients regarding to age
+    if(sleeping){
+      hunger-=0.00005;
+      poopometer+=0.00005;
+      if(happiness-0.0001>0){
+        happiness-=0.0001;
+      }
+      health-=0.00005+countPoops()*0.0001;
+      if(discipline-0.0001>0){
+        discipline-=0.0001;
+      }
+    }else{
+      hunger-=0.00025;
+      poopometer+=0.00025;
+      if(happiness-0.0002>0){
+        happiness-=0.0002;
+      }
+      health-=0.0001+countPoops()*0.0001;
+      if(discipline-0.0002>0){
+        discipline-=0.0002;
+      }
+      //discipline-=0.02;
+    }
+    age+=0.0000025;
+
+    //diarrhea :) for testing
+    //poopometer+=0.005;
+
+    //health-=1;
+    //health-=countPoops()*0.0001;
+    //health-=countPoops()*0.05;
+
+    if(poopometer>=10){
+      poopometer=countPoops();
+      poops[round(poopometer)]=random(20,display.width()+32);
+      if(soundEnabled){
+        tone(sound,200,50);
+      }
+      poopometer=0;
+    }
+
